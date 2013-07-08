@@ -12,6 +12,7 @@ var Vino = (function($) {
     var load_size = 15; // changed from 20
 	
     var cls = function(options) {
+		this.numTableRows = 0;
         this.options = options;
 
         this.lastID = 0;
@@ -102,6 +103,11 @@ var Vino = (function($) {
 							+ '<td>' + record.likes + '</td>';
 							
 			var newRow = document.getElementById('vidtable').insertRow(0);
+			this.numTableRows += 1;
+			if(this.numTableRows >= 10) {
+				document.getElementById('vidtable').deleteRow(10);
+				this.numTableRows -= 1;
+			}
 			newRow.innerHTML = vidInfo
         },
 
@@ -136,7 +142,7 @@ var Vino = (function($) {
 				}
 			}
 
-            if (q.length < 5) {
+            if (q.length < 45) {
 				console.log("After executing draw, q.length < 5, calling load");
 				this.load(false);
 				console.log("New q.length is " + q.length);

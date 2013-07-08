@@ -81,7 +81,7 @@ class Vine(object):
 		if(url != ""):
 		    currVine = {'VineURL': curr['entities']['urls'][0]['url'], 'screen_name': curr['user']['screen_name'], 'id': curr['id'], 'retweets': curr['retweet_count'], 'created_at': curr['created_at'], 'text': curr['text'], 'videoURL': url}
 		    arrCount += 1
-		    print(currVine)
+		    #print(currVine)
 		    vinoArray['count'] = arrCount
 		    vinoArray['vines'].append(currVine)
 		
@@ -93,7 +93,7 @@ class Vine(object):
 	    return JSONEncoder().encode(vinoArray)
         
     def getFromTwitter(self, tag=None, lastID=0, size=100):
-	#try:
+	try:
 	    q = 'vine.co/v'
 	    if tag != None:
 			q = q + " " + tag
@@ -104,8 +104,8 @@ class Vine(object):
 	    JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1)
 	    VinoArray = self.buildVinoArrayFromJson(JSONArray)
 	    return VinoArray
-	#except:
-	    #return self.getFromTwitter(tag, 0, 	3)
+	except:
+	    return self.getFromTwitter(tag, 0, 	size/2 + 1)
     
     
     def _call(self, call, params=None, data=None):
