@@ -90,10 +90,16 @@
         font-size: 14px;
         opacity: 0.9;
     }
-    
-#vidtable {
+
+    /*#videos .overlay .username,
+    #videos .overlay .likes,
+    {
+        font-size: 5px;
+    }*/
+
+#vidInfo {
 	float: right;
 	margin-left: 5px;
 	height: 480px;
-	width: 480px;
+    width: 480px;
 }
