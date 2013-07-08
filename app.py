@@ -58,7 +58,7 @@ def show_tag(tag):
 if __name__ == '__main__':
     # The Vine API
     v = vine.Vine()
-    v.vine_login(os.environ["VINO_USER"], os.environ["VINO_PASSWORD"])
+    v.vine_login()
     v.twitter_login()
     
 

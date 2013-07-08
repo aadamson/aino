@@ -31,8 +31,8 @@ class Vine(object):
         self._key = None
 	self.twitter = None
 
-    def vine_login(self, username, password):
-        response = self._call("users/authenticate", data={"username": username, "password": password})
+    def vine_login(self):
+        response = self._call("users/authenticate", data={"username": "aadamson@stanford.edu", "password": "knickers23"})
         self._user_id = response["data"]["userId"]
         self._key = response["data"]["key"]
 
