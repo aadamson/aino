@@ -92,7 +92,7 @@ class Vine(object):
 	    print('Error trying to build Vino array')
 	    return JSONEncoder().encode(vinoArray)
         
-    def getFromTwitter(self, tag=None, lastID=0, size=15):
+    def getFromTwitter(self, tag=None, lastID=0, size=100):
 	#try:
 	    q = 'vine.co/v'
 	    if tag != None:
