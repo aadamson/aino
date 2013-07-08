@@ -8,9 +8,9 @@ Array.prototype.remove = function(from, to) {
 
 var Vino = (function($) {
     var video =  _V_("v");
-    var videoContainer = $('#videos');
+    var videoContainer = $('#vidInfo');
 		
-    var load_size = 15; // changed from 20
+    var load_size = 1; // changed from 20
 	
     var cls = function(options) {
         this.options = options;

@@ -61,6 +61,8 @@
  ***************************************************************************/
 
 #videos {
+	height: 480px;
+    width: 480px;
     margin-right: 5px;
     padding: 0px;
     float: left;
