@@ -104,7 +104,7 @@ class Vine(object):
 	    pp.pprint(VinoArray)
 	    return VinoArray
 	except:
-	    return self.getFromTwitter(tag, 0, 	1)
+	    return self.getFromTwitter(tag, 0, 	3)
     
     
     def _call(self, call, params=None, data=None):

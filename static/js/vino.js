@@ -9,7 +9,7 @@ Array.prototype.remove = function(from, to) {
 var Vino = (function($) {
     var video =  _V_("v");
 		
-    var load_size = 1; // changed from 20
+    var load_size = 5; // changed from 20
 	
     var cls = function(options) {
         this.options = options;
