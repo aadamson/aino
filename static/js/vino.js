@@ -8,9 +8,8 @@ Array.prototype.remove = function(from, to) {
 
 var Vino = (function($) {
     var video =  _V_("v");
-    var videoContainer = $('#vidInfo');
 		
-    var load_size = 1; // changed from 20
+    var load_size = 5; // changed from 20
 	
     var cls = function(options) {
         this.options = options;
@@ -109,12 +108,13 @@ var Vino = (function($) {
             video.src(record.video);
             video.play;
             
-            var vidInfo = '<table><tr><td>' + record.description + '</td>'
+            var vidInfo = '<td>' + record.description + '</td>'
 							+ '<td>' + record.username + '</td>'
 							+ '<td><a href="' + record.vineURL + '">' + record.vineURL +'</a></td>'
-							+ '<td>' + record.likes + '</td>'
-							+ '</tr></table>';
-			videoContainer.append(vidInfo);
+							+ '<td>' + record.likes + '</td>';
+							
+			var newRow = document.getElementById('vidtable').insertRow(0);
+			newRow.innerHTML = vidInfo
         },
 
         redraw: function() {

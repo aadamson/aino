@@ -89,23 +89,20 @@ class Vine(object):
 	    return JSONEncoder().encode(vinoArray)
         
     def getFromTwitter(self, tag=None, lastID=0, size=15):
-	try:
-	    q = 'vine.co/v'
-	    if tag != None:
-			q = q + " " + tag
-	
-	    #if lastID != 0:
-		#JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1, since_id=lastID)
-	    #else:
-	    pp=pprint.PrettyPrinter(depth=4)
-	    JSONArray = self.twitter.search.tweets(q=q, count=size, include_entities=1)
-	    pp.pprint(JSONArray)
-	    VinoArray = self.buildVinoArrayFromJson(JSONArray)
-	    pp.pprint(VinoArray)
-	    return VinoArray
-	except:
-	    print('Twitter error')
-	    return self.getFromTwitter(None, lastID, size)
+	q = 'vine.co/v'
+	if tag != None:
+		    q = q + " " + tag
+    
+	#if lastID != 0:
+	    #JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1, since_id=lastID)
+	#else:
+	pp=pprint.PrettyPrinter(depth=4)
+	JSONArray = self.twitter.search.tweets(q=q, count=size, include_entities=1)
+	pp.pprint(JSONArray)
+	VinoArray = self.buildVinoArrayFromJson(JSONArray)
+	pp.pprint(VinoArray)
+	return VinoArray
+    
     
     def _call(self, call, params=None, data=None):
         """Make an API call. Return the parsed response. If login has
