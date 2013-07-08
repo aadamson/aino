@@ -37,7 +37,7 @@ class Vine(object):
         self._key = response["data"]["key"]
 
     def twitter_login(self):
-	MY_TWITTER_CREDS = os.path.expanduser('~/vino/creds')
+	MY_TWITTER_CREDS = os.path.expanduser('~/creds')
 	if not os.path.exists(MY_TWITTER_CREDS):
 	    oauth_dance("Bonfire", CONSUMER_KEY, CONSUMER_SECRET, MY_TWITTER_CREDS)
 
