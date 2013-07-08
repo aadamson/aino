@@ -58,10 +58,11 @@ class Vine(object):
 	data = usock.read()
 	usock.close()
     
-	start = data.find("https://vines.s3.amazonaws.com/r/videos/")
+	start = data.find("twitter:player:stream")
+	start = data.find("https://", start)
 	if(start == -1):
 	    start = data.find("https://v.cdn.vine.co/r/videos/")
-	end = data.find("?", start)
+	end = data.find(".mp4", start) + 4
 	
 	return data[start:end]
 	
@@ -75,21 +76,24 @@ class Vine(object):
 	    
 	    statuses = JSONArray['statuses']
 	    for i in range(0, count):
-		print(i)
 		curr = statuses[i]
-		currVine = {'VineURL': curr['entities']['urls'][0]['url'], 'screen_name': curr['user']['screen_name'], 'id': curr['id'], 'retweets': curr['retweet_count'], 'created_at': curr['created_at'], 'text': curr['text'], 'videoURL': self.extractVideoURLFromStatusJSON(curr)}
-		arrCount += 1
-		vinoArray['count'] = arrCount
-		vinoArray['vines'].append(currVine)
+		url = self.extractVideoURLFromStatusJSON(curr)
+		if(url != ""):
+		    currVine = {'VineURL': curr['entities']['urls'][0]['url'], 'screen_name': curr['user']['screen_name'], 'id': curr['id'], 'retweets': curr['retweet_count'], 'created_at': curr['created_at'], 'text': curr['text'], 'videoURL': url}
+		    arrCount += 1
+		    print(currVine)
+		    vinoArray['count'] = arrCount
+		    vinoArray['vines'].append(currVine)
 		
 		
 	    return JSONEncoder().encode(vinoArray)
 	    
 	except:
+	    print('Error trying to build Vino array')
 	    return JSONEncoder().encode(vinoArray)
         
     def getFromTwitter(self, tag=None, lastID=0, size=15):
-	try:
+	#try:
 	    q = 'vine.co/v'
 	    if tag != None:
 			q = q + " " + tag
@@ -97,14 +101,11 @@ class Vine(object):
 	    #if lastID != 0:
 		#JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1, since_id=lastID)
 	    #else:
-	    pp=pprint.PrettyPrinter(depth=4)
-	    JSONArray = self.twitter.search.tweets(q=q, count=size, include_entities=1)
-	    pp.pprint(JSONArray)
+	    JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1)
 	    VinoArray = self.buildVinoArrayFromJson(JSONArray)
-	    pp.pprint(VinoArray)
 	    return VinoArray
-	except:
-	    return self.getFromTwitter(tag, 0, 	3)
+	#except:
+	    #return self.getFromTwitter(tag, 0, 	3)
     
     
     def _call(self, call, params=None, data=None):

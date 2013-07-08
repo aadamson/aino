@@ -66,9 +66,13 @@
 						app.draw();
 						console.log('ended')
 					};
-				
 					myPlayer.on("ended", videoEnd);
-					myPlayer.on("error", videoEnd);
+					
+					var videoErr = function(){
+						app.draw();
+						console.log('error')
+					};
+					myPlayer.on("error", videoErr);
 				});
 		    </script>
 	    </div>

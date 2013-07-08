@@ -9,102 +9,93 @@ Array.prototype.remove = function(from, to) {
 var Vino = (function($) {
     var video =  _V_("v");
 		
-    var load_size = 5; // changed from 20
+    var load_size = 15; // changed from 20
 	
     var cls = function(options) {
         this.options = options;
 
-        this.page = 0;
-        this.hasNextPage = false;
-        this.lastResponse = {};
-        this.isLoading = false;
         this.lastID = 0;
-        
-
+   
         this.documentNode = $(document);
 		
-		this.recentVideoHTML = [];
         this._queue = [];
         this.load(true);
     };
 
     cls.prototype = {
-        load: function(drawOnResponse) {
-            var self, callback, endpoint;
-            if (drawOnResponse !== false) {
-                drawOnResponse = true;
-            }
-
-            this.page += 1;
-
-            if (this.options.recent) {
-                endpoint = this.generateEndpointURL('popular', this.lastID, load_size);
-            } else {
-                endpoint = this.generateTagURL(this.options.tag);
-            }
-
-            self = this;
-            this.isLoading = true;
-            $.get(endpoint, function(response, textStatus, jqXHR) {
-				response = JSON.parse(response);
-                this.lastResponse = response;
-                
-				if(response.count > 1) {
-					self.hasNextPage = true;
-				}
-
-                self.queue(response);
-                self.isLoading = false;
-
-                if (self.page == 1 || drawOnResponse) {
-                    self.draw();
-				}
-            }, 'json');
-        },
-
-        queue: function(data) {
+		 queue: function(data) {
             var vines = data.vines;
             if (vines == null) {
+				console.log("Null parameter passed as data to queue");
                 return false;
             }
 			
             var q = this._queue;
             var count = data.count;
-			this.lastID = vines[0].id;
+			this.lastID = vines[count-1].id;
 			
             for (var i = 0; i < count; i++) {
                 current = vines[i];
-          
-                q.push({
-					vineURL: current.VineURL,
-                    id: current.id,
-                    video: current.videoURL,
-                    description: current.text,
-                    username: current.screen_name,
-                    created_at: current.created_at,
-                    likes: current.retweets
-                });
+				if(current != null && current.videoURL != '') {
+	                q.push({
+						vineURL: current.VineURL,
+	                    id: current.id,
+	                    video: current.videoURL,
+	                    description: current.text,
+	                    username: current.screen_name,
+	                    created_at: current.created_at,
+	                    likes: current.retweets
+	                });
+				}
             }
         },
-        
-        updateInfoTable: function(vidInfo) {
-			this.recentVideoHTML.push(vidInfo);
-			var count = this.recentVideoHTML.length;
-			if(count > 10) {
-				recentVideoHTML.pop();
-			}
-			var newHTML = "";
-			for(var i = 0; i < count; i++) {
-				newHTML.concat(this.recentVideoHTML[i]);
-			}
-			videoContainer = newHTML;
-		},
-				
-        
-        generateVideoHtml: function(record, width, height) {
-            video.src(record.video);
-            video.play;
+		
+        load: function(drawOnResponse) {
+            if (this.options.recent) {
+                endpoint = this.generateEndpointURL('popular', this.lastID, load_size);
+            } else {
+                endpoint = this.generateTagURL(this.options.tag);
+            }
             
+            clsObject = this;
+            
+            $.get(endpoint, function(response, textStatus, jqXHR) {
+				response = JSON.parse(response);
+
+                clsObject.queue(response);
+
+				if(drawOnResponse){
+					console.log("load calling draw...");
+					clsObject.draw();
+				}
+            }, 'json');
+        },
+        
+        displayNextVideo: function(videoRecord) {
+			try {
+				video.src(videoRecord.video);
+			}
+			catch(err) {
+				console.log('Error with video.src');
+				return false;
+			}
+			try {
+				video.play;
+			}
+			catch(err) {
+				console.log('Error with video.play');
+				return false;
+			}
+			//}
+			/*catch(err) {
+				console.log('Encountered type error while trying to play new video. Attempting to draw next video via call to draw.');
+				return false;
+			}*/
+			
+			return true;
+		},
+
+        generateVideoHtml: function(record) {
             var vidInfo = '<td>' + record.description + '</td>'
 							+ '<td>' + record.username + '</td>'
 							+ '<td><a href="' + record.vineURL + '">' + record.vineURL +'</a></td>'
@@ -114,33 +105,41 @@ var Vino = (function($) {
 			newRow.innerHTML = vidInfo
         },
 
-        redraw: function() {
-            // Reset queue to current page in order to redraw
-            this.queue(this.lastResponse);
-            this.load(true);
-        },
-
         draw: function() {			
             var q = this._queue;
-            if (!q.length) {
-                this.load(true);
-            }
+           
+            /*while(true) {
+				if (q.length == 0) {
+					console.log("q.length == 0, calling load");
+	                this.load(false); // don't want to draw twice
+	                q = this._queue;
+				}
+				while(q.length > 0 && !(q[q.length-1] in window)) {
+					console.log("First video object in queue undefined, removing");
+					q.pop();
+				}
+				if(q.length > 0 && q[q.length-1] in window) break;
+			}*/
+			
+			while(true) {
+				var nextVideo = q[q.length-1];
+				console.log(nextVideo);
+				if(q.length > 0 && this.displayNextVideo(nextVideo)) {
+					this.generateVideoHtml(nextVideo);
+					q.pop();
+					break;
+				}
+				else {
+					console.log('Either !(q.length > 0) || displayNextVideo returned false, dumping queue and calling load');
+					q = [];
+					this.load(false);
+				}
+			}
 
-            var container, width, height,
-                count, current;
-            
-            this.generateVideoHtml(q[q.length-1], width, height);
-
-            q.pop();
-            count = q.length;
-
-            if (this.hasNextPage) {
-                return;
-            }
-
-            if (!count) {
+            if (q.length < 5) {
+				console.log("After executing draw, q.length < 5, calling load");
 				this.load(false);
-                return;
+				console.log("New q.length is " + q.length);
             }
         },
         
