@@ -44,6 +44,8 @@
 		    </video>
 		    <script src="{{ url_for('static', filename='js/vino.js') }}"></script>
 		    <script type="text/javascript">
+				
+				
 		        $('#search').submit(function(e) {
 		            e.preventDefault();
 		
@@ -59,21 +61,7 @@
 		        
 		        var myPlayer = videojs("v");
 		
-				videojs("v").ready(function(){
-					var myPlayer = this;
 				
-					var videoEnd = function(){
-						app.draw();
-						console.log('ended')
-					};
-					myPlayer.on("ended", videoEnd);
-					
-					var videoErr = function(){
-						app.draw();
-						console.log('error')
-					};
-					myPlayer.on("error", videoErr);
-				});
 		    </script>
 	    </div>
 	    <div id="vidinfo">

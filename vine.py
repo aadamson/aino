@@ -41,21 +41,21 @@ class Vine(object):
 
     def recent(self, lastID=0, size=15):
         return self.getFromTwitter(None, lastID, size)
-
-    ''' 
-    def extractVideoURL(status):
+	
+    def getVideoURL(self, status):
 	url = status['entities']['urls'][0]['expanded_url']
 	print(url)
-	
 	usock = urllib2.urlopen(url)
 	vineHTML = usock.read()
 	usock.close()
     
 	videoDivEnd = vineHTML.find("video/mp4")
 	videoURLStart = vineHTML.rfind("https://", 0, videoDivEnd)
-	videURLEnd = vineHTML.find(".mp4", videoURLStar) + len('.mp4')
-	print(vineHTML[videoURLStart:end])
-	return vineHTML[videoURLStart:end]
+	videoURLEnd = vineHTML.find(".mp4", videoURLStart) + len('.mp4')
+	return vineHTML[videoURLStart:videoURLEnd]
+
+    ''' 
+    
 	
     def buildHTMLRow(tweet):
 	innerHTML = '<td>' + tweet['text'] + '</td>'
@@ -63,25 +63,16 @@ class Vine(object):
 	innerHTML += '<td><a href="' + tweet['entities']['urls'][0]['url'] + '">' + tweet['entities']['urls'][0]['url'] +'</a></td>'
 	innerHTML += '<td>' + tweet['retweet_count'] + '</td>'
 	return innerHTML
-	
-    def buildVinoArrayFromJson(JSONArray):
-	arrCount = 0 
-	vinoArray = {'count': arrCount, 'vines': []}
-	
-	statuses = JSONArray['statuses']
-	for i in range(0, JSONArray['search_metadata']['count']):
-	    currTweet = statuses[i]
-	    url = extractVideoURLFromStatusJSON(currTweet)
-	    if(url != ""):
-		currVine = {'rowInnerHTML': buildHTMLRow(currTweet)
-			    'videoURL': url, 'id': currTweet['id']}
-		arrCount += 1
-		vinoArray['count'] = arrCount
-		vinoArray['vines'].append(currVine)
-	    
-	    
-	return JSONEncoder().encode(vinoArray)
     '''
+    
+    def addVideoURLs(self, statuses, count):
+	for i in range(0, count-1):
+	    url = self.getVideoURL(statuses[i])
+	    statuses[i]['videoURL'] = url
+	    print(statuses[i])
+	
+	return statuses
+
 	
     def getFromTwitter(self, tag, lastID, size):
 	q = 'vine.co/v'
@@ -89,5 +80,12 @@ class Vine(object):
 	    q = q + " " + tag
     
 	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", since_id=lastID, include_entities=1)
-	print(JSONArray)
+	for i in range(0, JSONArray['search_metadata']['count']-1):
+	    url = self.getVideoURL(JSONArray['statuses'][i])
+	    JSONArray['statuses'][i]['videoURL'] = url
+	    #print(statuses[i])
+	
 	return JSONArray['statuses']
+	#statuses = self.addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
+	#print(JSONArray)
+	#return statuses
