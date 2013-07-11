@@ -60,7 +60,31 @@
 							var app = new Vino({ tag: '{{ tag }}' });
 					{% endif %}
 					
-					var myPlayer = videojs("v");
+					player = videojs("v");
+					player.ready(function(){
+							console.log("loaded");
+				
+							var videoEnd = function(){
+									app.processUpdates();
+						
+									console.log('ended')
+							};
+							player.on("ended", videoEnd);
+							
+							var videoErr = function(){
+									var table = document.getElementById('vidtable');
+									table.deleteRow(0);
+											
+									app.processUpdates();
+									console.log('error')
+							};
+							player.on("error", videoErr);
+							
+							var videoLoaded = function(){
+									player.play();
+							};
+							player.on("loadeddata", videoLoaded);
+				});
 			
 			
 			</script>
