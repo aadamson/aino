@@ -1,11 +1,3 @@
-// Array Remove - By John Resig (MIT Licensed)
-Array.prototype.remove = function(from, to) {
-    var rest = this.slice((to || from) + 1 || this.length);
-    this.length = from < 0 ? this.length + from : from;
-    return this.push.apply(this, rest);
-};
-
-
 var Vino = (function($) {
     var video =  _V_("v");
     videojs("v").ready(function(){
@@ -14,11 +6,13 @@ var Vino = (function($) {
 	
 		var videoEnd = function(){
 			app.draw();
+			
 			console.log('ended')
 		};
 		player.on("ended", videoEnd);
 		
 		var videoErr = function(){
+			document.getElementById('vidtable').deleteRow(0);
 			app.draw();
 			console.log('error')
 		};
@@ -26,37 +20,67 @@ var Vino = (function($) {
 		
 		var videoLoaded = function(){
 			video.play();
-			//app.updateTable();
 		};
 		player.on("loadeddata", videoLoaded);
 	});
-		
-    var load_size = 25; // changed from 20
 	
-    var cls = function(options) {
-        this.options = options;
-        
-        this.lastID = 0;
-   
-        this.documentNode = $(document);
+	var getRowHTML = function(record) {
+		var picline = '<img src="' + record['user']['profile_image_url'] + '">';
+		var textline = record['text'].replace(record['entities']['urls'][0]['url'], 
+											  '<a href="' + record['entities']['urls'][0]['url'] + '">' 
+											  + record['entities']['urls'][0]['url'] +'</a>');
 		
+		var innerHTML = '<td class="profile-pic">' + picline + '</td>';
+		innerHTML += '<td class="tweet-text">' + textline + '</td>';
+		innerHTML += '<td>' + record['user']['screen_name'] + '</td>';
+		innerHTML += '<td>' + record['retweet_count'] + '</td>';
+		return innerHTML;
+	};
+	
+	var updateTable = function(record) {
+		var historyTable = document.getElementById('vidtable');
+		var newRow = historyTable.insertRow(0);
+	
+		if(historyTable.rows.length > 10) {
+			historyTable.deleteRow(10);
+		}
+		newRow.innerHTML = getRowHTML(record);
+    };
+	
+    var membrane = function(options) {
+        this.options = options;
+        this.lastID = 0;
         this._queue = [];
         this.load(true);
     };
     
-    var getRowHTML = function(record) {
-			var textline = record['text'].replace(record['entities']['urls'][0]['url'], '<a href="' + record['entities']['urls'][0]['url'] + '">' + record['entities']['urls'][0]['url'] +'</a>');
-			var innerHTML = '<td>' + textline + '</td>';
-			innerHTML += '<td>' + record['user']['screen_name'] + '</td>';
-			innerHTML += '<td>' + record['retweet_count'] + '</td>';
-			return innerHTML;
-	};
+	var load_size = 25;
+	
+    membrane.prototype = {
+		load: function(drawOnResponse) {
+            if (this.options.recent) {
+                endpoint = this.generateEndpointURL('recent');
+            } else {
+                endpoint = this.generateTagURL(this.options.tag);
+            }
+            
+            membraneObject = this;
+            console.log('making api call');
+            $.get(endpoint, function(response, textStatus, jqXHR) {
+				console.log('api call made');
+                membraneObject.queue(response);
 
-    cls.prototype = {
-		 queue: function(data) {
-            if (data == null) {
+				if(drawOnResponse){
+					console.log("load calling draw...");
+					membraneObject.draw();
+				}
+            }, 'json');
+        },
+		
+		queue: function(data) {
+			if (data.length == 0) {
 				console.log("Null parameter passed as data to queue");
-                return false;
+                this.load(this._queue.length == 0);
             }
 			
             var q = this._queue;
@@ -65,35 +89,7 @@ var Vino = (function($) {
             this.lastID = data[data.length-1].id;
         },
 		
-        load: function(drawOnResponse) {
-            if (this.options.recent) {
-                endpoint = this.generateEndpointURL('recent');
-            } else {
-                endpoint = this.generateTagURL(this.options.tag);
-            }
-            
-            clsObject = this;
-            console.log('making api call');
-            $.get(endpoint, function(response, textStatus, jqXHR) {
-				console.log('api call made');
-                clsObject.queue(response);
-
-				if(drawOnResponse){
-					console.log("load calling draw...");
-					clsObject.draw();
-				}
-            }, 'json');
-        },
-
-        updateTable: function(record) {
-			var historyTable = document.getElementById('vidtable');
-			var newRow = historyTable.insertRow(0);
-		
-			if(historyTable.rows.length > 10) {
-				historyTable.deleteRow(10);
-			}
-			newRow.innerHTML = getRowHTML(record);
-        },
+        
 
         draw: function() {			
             var q = this._queue;
@@ -106,7 +102,7 @@ var Vino = (function($) {
 			console.log(nextVideo);
 			if(nextVideo.videoURL) {
 				video.src(nextVideo.videoURL);
-				this.updateTable(nextVideo);
+				updateTable(nextVideo);
 				q.pop();
 			}
 			else {
@@ -129,10 +125,10 @@ var Vino = (function($) {
         },
 
         generateTagURL: function(tag) {
-            var endpoint = 'tags/' + encodeURIComponent(tag);
+			var endpoint = 'tags/' + encodeURIComponent(tag);
             return this.generateEndpointURL(endpoint, 0, load_size);
         }
     };
 
-    return cls;
+    return membrane;
 })(window.jQuery || {});

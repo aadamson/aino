@@ -15,12 +15,18 @@
         padding-top: 5px;
         padding-bottom: 5px;
     }
-
-    #header .brand {
-        background: url(../img/marx.png);
-        height: 32px;
-        width: 30px;
-        text-indent: 35px;
+    
+    #branding .brand-img {
+		float: left;
+		#height: 35px;
+        #width: 31px;
+	}
+		
+    #branding .brand {
+        #background: url(../img/marx.png);
+        #height: 35px;
+        #width: 31px;
+        text-indent: 10px;
         margin-top: 10px;
         font-family: Calibri, Candara, Segoe, "Segoe UI", Optima, Arial, sans-serif;
 
@@ -59,6 +65,7 @@
 /****************************************************************************
  * VIDEOS
  ***************************************************************************/
+	
 
 #videos {
 	height: 600px;
@@ -68,6 +75,7 @@
     margin-right: 25px;
     float: left;
     list-style: none;
+    background-color: #C8C8C8;
 }
 
     #videos li {
@@ -101,7 +109,7 @@
 #vidinfo {
 	float: left;
 	margin-top: 50px;
-	height: 480px;
+	height: 600px;
     width: 480px;
     
     font-size: 10px;
