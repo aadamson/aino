@@ -18,9 +18,11 @@ def cached(time=None):
             key = "%s__%s__%s" % (f.func_name, args, kwargs)
             data = mc.get(key)
             if not data:
-                print("caching")
+                print("caching response for " + str(time) + " seconds")
                 data = f(*args, **kwargs)
                 mc.set(key, data, time=time)
+            else:
+                print("retrieved cached response")
             return data
         return _f
     return _cached

@@ -15,6 +15,24 @@ from twitter import *
 CONSUMER_KEY = "guloV0nVh0nHJ80PxoGBJg"
 CONSUMER_SECRET = "dCtKkpdDQgFwu03DDQtLJFkOWKyyRL1iG6GeEnWexo"
 
+def getVideoURL(status):
+    url = status['entities']['urls'][0]['expanded_url']
+    usock = urllib2.urlopen(url)
+    vineHTML = usock.read()
+    usock.close()
+
+    metaProperty = vineHTML.find("twitter:player:stream")
+    videoURLStart = vineHTML.find("https://", metaProperty)
+    videoURLEnd = vineHTML.find(".mp4", videoURLStart) + len('.mp4')
+    return vineHTML[videoURLStart:videoURLEnd]
+    
+def addVideoURLs(statuses, count):
+    for i in range(0, count-1):
+	url = getVideoURL(statuses[i])
+	statuses[i]['videoURL'] = url
+    
+    return statuses
+
 class VineError(Exception):
     def __init__(self, response):
         self.code = response["code"]
@@ -42,25 +60,7 @@ class Vine(object):
     def recent(self, size=15):
         return self.getFromTwitter(None, size)
 	
-    def getVideoURL(self, status):
-	url = status['entities']['urls'][0]['expanded_url']
-	usock = urllib2.urlopen(url)
-	vineHTML = usock.read()
-	usock.close()
     
-	metaProperty = vineHTML.find("twitter:player:stream")
-	videoURLStart = vineHTML.find("https://", metaProperty)
-	videoURLEnd = vineHTML.find(".mp4", videoURLStart) + len('.mp4')
-	return vineHTML[videoURLStart:videoURLEnd]
-    
-    def addVideoURLs(self, statuses, count):
-	for i in range(0, count-1):
-	    url = self.getVideoURL(statuses[i])
-	    statuses[i]['videoURL'] = url
-	
-	return statuses
-
-	
     def getFromTwitter(self, tag, size):
 	q = 'vine.co/v'
 	if tag != None:
@@ -68,7 +68,7 @@ class Vine(object):
     
 	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1)
 	try:
-	    return self.addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
+	    return addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
 	    
 	except:
 	    print('Error parsing and appending video URLs into JSON arrays')

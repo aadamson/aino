@@ -93,8 +93,6 @@ var Vino = (function($) {
             this._queue = this._queue.concat(data);
             
         },
-		
-        
 
         draw: function() {			
             var q = this._queue;
@@ -116,7 +114,7 @@ var Vino = (function($) {
 				return;
 			}
 
-            if (q.length < load_size) {
+            if (q.length < 5) {
 				console.log("After executing draw, q.length < 5, calling load");
 				this.load(false);
 				console.log("New q.length is " + q.length);
