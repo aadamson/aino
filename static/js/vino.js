@@ -54,7 +54,7 @@ function bonfire(options) {
 	this.load(true);
 }(window.jQuery || {});
 
-var load_size = 20;
+var load_size = 15;
 
 bonfire.prototype = {
 	/**

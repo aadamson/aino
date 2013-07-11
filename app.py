@@ -48,13 +48,13 @@ determine, based on user input, which argument to render tag.html with.
 '''
 
 @application.route('/api/recent/<int:size>')
-@cached(20)
+@cached(15)
 @json_endpoint
 def api_recent(size):
     return v.recent(size)
 
 @application.route('/api/tags/<tag>/<int:size>')
-@cached(20)
+@cached(15)
 @json_endpoint
 def api_tag(tag, size):
     return v.tag(tag, size=size)
