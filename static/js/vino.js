@@ -39,7 +39,7 @@ var updateTable = function(record) {
 };
 
 /**
- * membrane
+ * bonfire
  * --------
  * Used as an object that serves as a go-between, making API calls
  * at user input, and processing changes of state so they can be
@@ -47,7 +47,7 @@ var updateTable = function(record) {
  * intended for use as a callback
  */
 
-function membrane(options) {
+function bonfire(options) {
 	this.options = options; // either recent = true or a tag
 	this.video =  _V_("v");
 	this._queue = [];
@@ -56,7 +56,7 @@ function membrane(options) {
 
 var load_size = 20;
 
-membrane.prototype = {
+bonfire.prototype = {
 	/**
 	 * Function: load
 	 * --------------
@@ -73,15 +73,15 @@ membrane.prototype = {
 			endpoint = this.generateTagURL(this.options.tag); 
 		}
 		
-		membraneObject = this;
+		bonfireObject = this;
 		console.log('making api call');
 		$.get(endpoint, function(response, textStatus, jqXHR) {
 			console.log('api call made');
-			membraneObject.queue(response);
+			bonfireObject.queue(response);
 
 			if(processUpdatesOnResponse){
 				console.log("load calling processUpdates...");
-				membraneObject.processUpdates();
+				bonfireObject.processUpdates();
 			}
 		}, 'json');
 	},

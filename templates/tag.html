@@ -55,9 +55,9 @@
 					});
 			
 					{% if recent %}
-							var app = new membrane({ recent: true });
+							var app = new bonfire({ recent: true });
 					{% else %}
-							var app = new membrane({ tag: '{{ tag }}' });
+							var app = new bonfire({ tag: '{{ tag }}' });
 					{% endif %}
 					
 					player = videojs("v");
