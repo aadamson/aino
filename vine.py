@@ -44,32 +44,19 @@ class Vine(object):
 	
     def getVideoURL(self, status):
 	url = status['entities']['urls'][0]['expanded_url']
-	print(url)
 	usock = urllib2.urlopen(url)
 	vineHTML = usock.read()
 	usock.close()
     
-	videoDivEnd = vineHTML.find("video/mp4")
-	videoURLStart = vineHTML.rfind("https://", 0, videoDivEnd)
+	metaProperty = vineHTML.find("twitter:player:stream")
+	videoURLStart = vineHTML.find("https://", metaProperty)
 	videoURLEnd = vineHTML.find(".mp4", videoURLStart) + len('.mp4')
 	return vineHTML[videoURLStart:videoURLEnd]
-
-    ''' 
-    
-	
-    def buildHTMLRow(tweet):
-	innerHTML = '<td>' + tweet['text'] + '</td>'
-	innerHTML += '<td>' + tweet['user']['screen_name'] + '</td>'
-	innerHTML += '<td><a href="' + tweet['entities']['urls'][0]['url'] + '">' + tweet['entities']['urls'][0]['url'] +'</a></td>'
-	innerHTML += '<td>' + tweet['retweet_count'] + '</td>'
-	return innerHTML
-    '''
     
     def addVideoURLs(self, statuses, count):
 	for i in range(0, count-1):
 	    url = self.getVideoURL(statuses[i])
 	    statuses[i]['videoURL'] = url
-	    print(statuses[i])
 	
 	return statuses
 
@@ -80,12 +67,9 @@ class Vine(object):
 	    q = q + " " + tag
     
 	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", since_id=lastID, include_entities=1)
-	for i in range(0, JSONArray['search_metadata']['count']-1):
-	    url = self.getVideoURL(JSONArray['statuses'][i])
-	    JSONArray['statuses'][i]['videoURL'] = url
-	    #print(statuses[i])
-	
-	return JSONArray['statuses']
-	#statuses = self.addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
-	#print(JSONArray)
-	#return statuses
+	try:
+	    return self.addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
+	    
+	except:
+	    print('Error parsing and appending video URLs into JSON arrays')
+	    return {}

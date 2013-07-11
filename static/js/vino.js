@@ -10,22 +10,28 @@ var Vino = (function($) {
     var video =  _V_("v");
     videojs("v").ready(function(){
 		console.log("loaded");
-		var myPlayer = this;
+		var player = this;
 	
 		var videoEnd = function(){
 			app.draw();
 			console.log('ended')
 		};
-		myPlayer.on("ended", videoEnd);
+		player.on("ended", videoEnd);
 		
 		var videoErr = function(){
 			app.draw();
 			console.log('error')
 		};
-		myPlayer.on("error", videoErr);
+		player.on("error", videoErr);
+		
+		var videoLoaded = function(){
+			video.play();
+			//app.updateTable();
+		};
+		player.on("loadeddata", videoLoaded);
 	});
 		
-    var load_size = 15; // changed from 20
+    var load_size = 25; // changed from 20
 	
     var cls = function(options) {
         this.options = options;
@@ -39,9 +45,9 @@ var Vino = (function($) {
     };
     
     var getRowHTML = function(record) {
-			var innerHTML = '<td>' + record['text'] + '</td>';
+			var textline = record['text'].replace(record['entities']['urls'][0]['url'], '<a href="' + record['entities']['urls'][0]['url'] + '">' + record['entities']['urls'][0]['url'] +'</a>');
+			var innerHTML = '<td>' + textline + '</td>';
 			innerHTML += '<td>' + record['user']['screen_name'] + '</td>';
-			innerHTML += '<td><a href="' + record['entities']['urls'][0]['url'] + '">' + record['entities']['urls'][0]['url'] +'</a></td>';
 			innerHTML += '<td>' + record['retweet_count'] + '</td>';
 			return innerHTML;
 	};
@@ -78,17 +84,12 @@ var Vino = (function($) {
 				}
             }, 'json');
         },
-		        
-        displayNextVideo: function(videoRecord) {
-			video.src(videoRecord.videoURL);
-			video.play;
-		},
-		
+
         updateTable: function(record) {
 			var historyTable = document.getElementById('vidtable');
 			var newRow = historyTable.insertRow(0);
 		
-			if(historyTable.length > 10) {
+			if(historyTable.rows.length > 10) {
 				historyTable.deleteRow(10);
 			}
 			newRow.innerHTML = getRowHTML(record);
@@ -104,7 +105,7 @@ var Vino = (function($) {
 			var nextVideo = q[q.length-1];
 			console.log(nextVideo);
 			if(nextVideo.videoURL) {
-				this.displayNextVideo(nextVideo)
+				video.src(nextVideo.videoURL);
 				this.updateTable(nextVideo);
 				q.pop();
 			}
@@ -113,9 +114,8 @@ var Vino = (function($) {
 				this.draw();
 				return;
 			}
-			
 
-            if (q.length < 45) {
+            if (q.length < load_size) {
 				console.log("After executing draw, q.length < 5, calling load");
 				this.load(false);
 				console.log("New q.length is " + q.length);

@@ -61,10 +61,11 @@
  ***************************************************************************/
 
 #videos {
-	height: 480px;
-    width: 480px;
-    margin-right: 5px;
-    padding: 0px;
+	height: 600px;
+    width: 600px;
+    margin-left: 50px;
+    margin-top: 50px;
+    margin-right: 25px;
     float: left;
     list-style: none;
 }
@@ -97,9 +98,11 @@
         font-size: 5px;
     }*/
 
-#vidInfo {
-	float: right;
-	margin-left: 5px;
+#vidinfo {
+	float: left;
+	margin-top: 50px;
 	height: 480px;
     width: 480px;
+    
+    font-size: 10px;
 }

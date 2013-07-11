@@ -38,14 +38,12 @@
 		<div id="videos">
 			<link href="http://vjs.zencdn.net/4.0/video-js.css" rel="stylesheet">
 			<script src="http://vjs.zencdn.net/4.0/video.js"></script>
-			<video id="v" class="video-js vjs-default-skin"  
-		      controls preload="auto" autoplay="true" width="480" height="480"  
+			<video id="v" class="video-js vjs-default-skin vjs-playing"  
+		      controls preload="auto" autoplay="true" width="600" height="600"  
 		      poster="http://sandbox.yoyogames.com/extras/image/name/san2/851/362851/original/tacoman.gif"  >  
 		    </video>
 		    <script src="{{ url_for('static', filename='js/vino.js') }}"></script>
 		    <script type="text/javascript">
-				
-				
 		        $('#search').submit(function(e) {
 		            e.preventDefault();
 		
