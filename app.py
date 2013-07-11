@@ -1,15 +1,22 @@
 import functools
 import os
 import json
-
-
 import flask
-
 import vine
 
 application = flask.Flask(__name__)
 
 application.debug=True
+
+'''
+Function: cached
+----------------
+Attempts to retrieve value associated with key formed from API call. The
+value is returned if found. Otherwise, the response to the API call is
+formed (value) and associated with the key.
+
+Credit to: starlock (github.com/starlock/vino)
+'''
 
 def cached(time=None):
     def _cached(f):
@@ -33,14 +40,19 @@ def json_endpoint(f):
         return flask.Response(json.dumps(f(*args, **kwargs)), content_type="application/json")
     return _json_endpoint
 
-#@application.route('/api/popular', defaults={"page": None})
+'''
+The next four blocks are flask routing directives. The first two catch 
+calls directed at /api/recent/* and /api/tags/* respectively, parses them,
+and returns the result of calling the relevant Vine methods. The last two
+determine, based on user input, which argument to render tag.html with.
+'''
+
 @application.route('/api/recent/<int:size>')
 @cached(20)
 @json_endpoint
 def api_recent(size):
     return v.recent(size)
 
-#@application.route('/api/tags/<tag>', defaults={"page": None})
 @application.route('/api/tags/<tag>/<int:size>')
 @cached(20)
 @json_endpoint
@@ -63,12 +75,14 @@ if __name__ == '__main__':
 
     # Memcached if available
     if "MEMCACHIER_SERVERS" in os.environ:
+        print("memcachier info found")
         os.environ['MEMCACHE_SERVERS'] = os.environ.get('MEMCACHIER_SERVERS', '').replace(',', ';')
         os.environ['MEMCACHE_USERNAME'] = os.environ.get('MEMCACHIER_USERNAME', '')
         os.environ['MEMCACHE_PASSWORD'] = os.environ.get('MEMCACHIER_PASSWORD', '')
 
     if "MEMCACHE_SERVERS" in os.environ:
         import pylibmc
+        print("Loading memcached")
         mc = pylibmc.Client(
             servers=[os.environ.get("MEMCACHE_SERVERS")],
             username=os.environ.get("MEMCACHE_USERNAME"),
@@ -76,6 +90,7 @@ if __name__ == '__main__':
             binary=True)
     else:
         class MemcacheDummy(object):
+            print("memcached not found, building dummy")
             def get(self, *args):
                return None
 

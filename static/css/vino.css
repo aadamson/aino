@@ -78,34 +78,6 @@
     background-color: #C8C8C8;
 }
 
-    #videos li {
-        float: left;
-        margin-bottom: 0px;
-        background-image: url(../img/loadin.jpg);
-        background-size: cover;
-        /*background-repeat: no-repeat;
-        background-position: center center;*/
-    }
-
-    #videos li.selected .overlay {
-        display: inline;
-    }
-
-    #videos .overlay {
-        position: absolute;
-        display: none;
-        color: #fff;
-        background-color: #444;
-        font-size: 14px;
-        opacity: 0.9;
-    }
-
-    /*#videos .overlay .username,
-    #videos .overlay .likes,
-    {
-        font-size: 5px;
-    }*/
-
 #vidinfo {
 	float: left;
 	margin-top: 50px;

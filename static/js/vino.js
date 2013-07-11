@@ -14,9 +14,7 @@ var Vino = (function($) {
 		var videoErr = function(){
 			var table = document.getElementById('vidtable');
 			table.deleteRow(0);
-			
-			table.rows[0].setAttribute("class", "newest-tweet");
-			
+						
 			app.draw();
 			console.log('error')
 		};
@@ -27,6 +25,14 @@ var Vino = (function($) {
 		};
 		player.on("loadeddata", videoLoaded);
 	});
+	
+	/**
+	 * Function: getRowHTML
+	 * --------------------
+	 * Given a JSON record associated with a tweet referencing a Vine, 
+	 * parses relevant members (abbreviated URL, prof. pic, text), and 
+	 * constructs and returns an HTML table row.
+	 */
 	
 	var getRowHTML = function(record) {
 		var picline = '<img width=\'48px\' height=\'48px\' src="' + record['user']['profile_image_url'] + '">';
@@ -40,21 +46,36 @@ var Vino = (function($) {
 		return innerHTML;
 	};
 	
+	/**
+	 * Function: updateTable
+	 * ---------------------
+	 * Given a JSON record associated with a tweet referencing a Vine, 
+	 * finds the table in document with the id 'vidtable', inserts a row,
+	 * collects HTML for that row from getRowHTML, and deletes the last 
+	 * row if necessary.
+	 */
+	
 	var updateTable = function(record) {
 		var historyTable = document.getElementById('vidtable');
-		if(historyTable.rows.length > 0) historyTable.rows[0].setAttribute("class", "");
 		var newRow = historyTable.insertRow(0);
-		newRow.setAttribute("class", "newest-tweet");
 		newRow.innerHTML = getRowHTML(record);
 		
 		if(historyTable.rows.length > 10) {
-			historyTable.deleteRow(10);
+			historyTable.deleteRow(historyTable.rows.length - 1);
 		}
 		
     };
+    
+    /**
+     * membrane
+     * --------
+     * Used as an object that serves as a go-between, making API calls
+     * at user input, and processing changes of state so they can be
+     * reflected in the browser.
+     */
 	
     var membrane = function(options) {
-        this.options = options;
+        this.options = options; // either recent = true or a tag
         this._queue = [];
         this.load(true);
     };
@@ -121,6 +142,10 @@ var Vino = (function($) {
             }
         },
         
+        /**
+         * Function: generateEndpointURL
+         * -----------------------------
+         */
         generateEndpointURL: function(endpoint) {
             var origin = document.location.origin;
 
