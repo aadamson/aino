@@ -55,9 +55,9 @@
 					});
 			
 					{% if recent %}
-							var app = new Vino({ recent: true });
+							var app = new membrane({ recent: true });
 					{% else %}
-							var app = new Vino({ tag: '{{ tag }}' });
+							var app = new membrane({ tag: '{{ tag }}' });
 					{% endif %}
 					
 					player = videojs("v");
