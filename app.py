@@ -7,8 +7,6 @@ import flask
 
 import vine
 
-
-
 application = flask.Flask(__name__)
 
 application.debug=True
@@ -20,6 +18,7 @@ def cached(time=None):
             key = "%s__%s__%s" % (f.func_name, args, kwargs)
             data = mc.get(key)
             if not data:
+                print("caching")
                 data = f(*args, **kwargs)
                 mc.set(key, data, time=time)
             return data
@@ -33,18 +32,18 @@ def json_endpoint(f):
     return _json_endpoint
 
 #@application.route('/api/popular', defaults={"page": None})
-@application.route('/api/recent/<int:lastID>/<int:size>')
+@application.route('/api/recent/<int:size>')
 @cached(20)
 @json_endpoint
-def api_recent(lastID, size):
-    return v.recent(lastID=lastID, size=size)
+def api_recent(size):
+    return v.recent(size)
 
 #@application.route('/api/tags/<tag>', defaults={"page": None})
-@application.route('/api/tags/<tag>/<int:lastID>/<int:size>')
+@application.route('/api/tags/<tag>/<int:size>')
 @cached(20)
 @json_endpoint
-def api_tag(tag, lastID, size):
-    return v.tag(tag, lastID=lastID, size=size)
+def api_tag(tag, size):
+    return v.tag(tag, size=size)
 
 @application.route('/')
 def show_recent():
@@ -61,6 +60,11 @@ if __name__ == '__main__':
     
 
     # Memcached if available
+    if "MEMCACHIER_SERVERS" in os.environ:
+        os.environ['MEMCACHE_SERVERS'] = os.environ.get('MEMCACHIER_SERVERS', '').replace(',', ';')
+        os.environ['MEMCACHE_USERNAME'] = os.environ.get('MEMCACHIER_USERNAME', '')
+        os.environ['MEMCACHE_PASSWORD'] = os.environ.get('MEMCACHIER_PASSWORD', '')
+
     if "MEMCACHE_SERVERS" in os.environ:
         import pylibmc
         mc = pylibmc.Client(

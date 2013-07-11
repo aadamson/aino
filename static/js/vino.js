@@ -12,7 +12,11 @@ var Vino = (function($) {
 		player.on("ended", videoEnd);
 		
 		var videoErr = function(){
-			document.getElementById('vidtable').deleteRow(0);
+			var table = document.getElementById('vidtable');
+			table.deleteRow(0);
+			
+			table.rows[0].setAttribute("class", "newest-tweet");
+			
 			app.draw();
 			console.log('error')
 		};
@@ -25,31 +29,32 @@ var Vino = (function($) {
 	});
 	
 	var getRowHTML = function(record) {
-		var picline = '<img src="' + record['user']['profile_image_url'] + '">';
+		var picline = '<img width=\'48px\' height=\'48px\' src="' + record['user']['profile_image_url'] + '">';
 		var textline = record['text'].replace(record['entities']['urls'][0]['url'], 
 											  '<a href="' + record['entities']['urls'][0]['url'] + '">' 
 											  + record['entities']['urls'][0]['url'] +'</a>');
+		textline += '<br>' + record['user']['screen_name'];
 		
 		var innerHTML = '<td class="profile-pic">' + picline + '</td>';
 		innerHTML += '<td class="tweet-text">' + textline + '</td>';
-		innerHTML += '<td>' + record['user']['screen_name'] + '</td>';
-		innerHTML += '<td>' + record['retweet_count'] + '</td>';
 		return innerHTML;
 	};
 	
 	var updateTable = function(record) {
 		var historyTable = document.getElementById('vidtable');
+		if(historyTable.rows.length > 0) historyTable.rows[0].setAttribute("class", "");
 		var newRow = historyTable.insertRow(0);
-	
+		newRow.setAttribute("class", "newest-tweet");
+		newRow.innerHTML = getRowHTML(record);
+		
 		if(historyTable.rows.length > 10) {
 			historyTable.deleteRow(10);
 		}
-		newRow.innerHTML = getRowHTML(record);
+		
     };
 	
     var membrane = function(options) {
         this.options = options;
-        this.lastID = 0;
         this._queue = [];
         this.load(true);
     };
@@ -80,13 +85,13 @@ var Vino = (function($) {
 		queue: function(data) {
 			if (data.length == 0) {
 				console.log("Null parameter passed as data to queue");
-                this.load(this._queue.length == 0);
+                //this.load(this._queue.length == 0);
+                return false;
             }
 			
             var q = this._queue;
             this._queue = this._queue.concat(data);
             
-            this.lastID = data[data.length-1].id;
         },
 		
         
@@ -120,13 +125,14 @@ var Vino = (function($) {
         
         generateEndpointURL: function(endpoint) {
             var origin = document.location.origin;
-            console.log(origin + '/api/' + endpoint + '/' + this.lastID + '/' + load_size);
-            return origin + '/api/' + endpoint + '/' + this.lastID + '/' + load_size;
+
+            console.log(origin + '/api/' + endpoint + '/' + load_size);
+            return origin + '/api/' + endpoint + '/' + load_size;
         },
 
         generateTagURL: function(tag) {
 			var endpoint = 'tags/' + encodeURIComponent(tag);
-            return this.generateEndpointURL(endpoint, 0, load_size);
+            return this.generateEndpointURL(endpoint);
         }
     };
 

@@ -36,11 +36,11 @@ class Vine(object):
 
 	self.twitter = Twitter(auth=OAuth(oauth_token, oauth_secret, CONSUMER_KEY, CONSUMER_SECRET))
     
-    def tag(self, tag, lastID=0, size=15):
-        return self.getFromTwitter("#" + tag, lastID, size)
+    def tag(self, tag, size=15):
+        return self.getFromTwitter("#" + tag, size)
 
-    def recent(self, lastID=0, size=15):
-        return self.getFromTwitter(None, lastID, size)
+    def recent(self, size=15):
+        return self.getFromTwitter(None, size)
 	
     def getVideoURL(self, status):
 	url = status['entities']['urls'][0]['expanded_url']
@@ -61,15 +61,15 @@ class Vine(object):
 	return statuses
 
 	
-    def getFromTwitter(self, tag, lastID, size):
+    def getFromTwitter(self, tag, size):
 	q = 'vine.co/v'
 	if tag != None:
 	    q = q + " " + tag
     
-	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", since_id=lastID, include_entities=1)
+	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1)
 	try:
 	    return self.addVideoURLs(JSONArray['statuses'], JSONArray['search_metadata']['count'])
 	    
 	except:
 	    print('Error parsing and appending video URLs into JSON arrays')
-	    return {}
+	    return JSONEncoder().encode({}) 
