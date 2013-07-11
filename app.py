@@ -32,14 +32,14 @@ def json_endpoint(f):
         return flask.Response(json.dumps(f(*args, **kwargs)), content_type="application/json")
     return _json_endpoint
 
-@application.route('/api/popular', defaults={"page": None})
-@application.route('/api/popular/<int:lastID>/<int:size>')
+#@application.route('/api/popular', defaults={"page": None})
+@application.route('/api/recent/<int:lastID>/<int:size>')
 @cached(20)
 @json_endpoint
-def api_popular(lastID, size):
+def api_recent(lastID, size):
     return v.recent(lastID=lastID, size=size)
 
-@application.route('/api/tags/<tag>', defaults={"page": None})
+#@application.route('/api/tags/<tag>', defaults={"page": None})
 @application.route('/api/tags/<tag>/<int:lastID>/<int:size>')
 @cached(20)
 @json_endpoint
@@ -47,8 +47,8 @@ def api_tag(tag, lastID, size):
     return v.tag(tag, lastID=lastID, size=size)
 
 @application.route('/')
-def show_popular():
-    return flask.render_template('tag.html', popular=True)
+def show_recent():
+    return flask.render_template('tag.html', recent=True)
 
 @application.route('/<tag>')
 def show_tag(tag):
@@ -58,7 +58,6 @@ def show_tag(tag):
 if __name__ == '__main__':
     # The Vine API
     v = vine.Vine()
-    v.vine_login()
     v.twitter_login()
     
 

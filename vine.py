@@ -10,8 +10,6 @@ import urllib2
 import requests
 from twitter import *
 
-BASE_URL = "https://api.vineapp.com/"
-
 #twitter info
 
 CONSUMER_KEY = "guloV0nVh0nHJ80PxoGBJg"
@@ -27,14 +25,7 @@ class VineError(Exception):
 
 class Vine(object):
     def __init__(self):
-        self._user_id = None
-        self._key = None
 	self.twitter = None
-
-    def vine_login(self):
-        response = self._call("users/authenticate", data={"username": "aadamson@stanford.edu", "password": "knickers23"})
-        self._user_id = response["data"]["userId"]
-        self._key = response["data"]["key"]
 
     def twitter_login(self):
 	MY_TWITTER_CREDS = os.path.expanduser('~/creds')
@@ -45,90 +36,58 @@ class Vine(object):
 
 	self.twitter = Twitter(auth=OAuth(oauth_token, oauth_secret, CONSUMER_KEY, CONSUMER_SECRET))
     
-    def tag(self, tag_, lastID=0, size=15):
-        return self.getFromTwitter("#" + tag_, lastID, size)
+    def tag(self, tag, lastID=0, size=15):
+        return self.getFromTwitter("#" + tag, lastID, size)
 
-    def recent(self, lastID, size=15):
+    def recent(self, lastID=0, size=15):
         return self.getFromTwitter(None, lastID, size)
-	
-    def extractVideoURLFromStatusJSON(self, status):
-	url = status['entities']['urls'][0]['expanded_url']
 
+    ''' 
+    def extractVideoURL(status):
+	url = status['entities']['urls'][0]['expanded_url']
+	print(url)
+	
 	usock = urllib2.urlopen(url)
-	data = usock.read()
+	vineHTML = usock.read()
 	usock.close()
     
-	start = data.find("twitter:player:stream")
-	start = data.find("https://", start)
-	if(start == -1):
-	    start = data.find("https://v.cdn.vine.co/r/videos/")
-	end = data.find(".mp4", start) + 4
+	videoDivEnd = vineHTML.find("video/mp4")
+	videoURLStart = vineHTML.rfind("https://", 0, videoDivEnd)
+	videURLEnd = vineHTML.find(".mp4", videoURLStar) + len('.mp4')
+	print(vineHTML[videoURLStart:end])
+	return vineHTML[videoURLStart:end]
 	
-	return data[start:end]
+    def buildHTMLRow(tweet):
+	innerHTML = '<td>' + tweet['text'] + '</td>'
+	innerHTML += '<td>' + tweet['user']['screen_name'] + '</td>'
+	innerHTML += '<td><a href="' + tweet['entities']['urls'][0]['url'] + '">' + tweet['entities']['urls'][0]['url'] +'</a></td>'
+	innerHTML += '<td>' + tweet['retweet_count'] + '</td>'
+	return innerHTML
 	
-    def buildVinoArrayFromJson(self, JSONArray):
-	vinoArray = {}
-	arrCount = 0
-	try:
-	    count = JSONArray['search_metadata']['count']
-	    
-	    vinoArray = {'count': arrCount, 'vines': []}
-	    
-	    statuses = JSONArray['statuses']
-	    for i in range(0, count):
-		curr = statuses[i]
-		url = self.extractVideoURLFromStatusJSON(curr)
-		if(url != ""):
-		    currVine = {'VineURL': curr['entities']['urls'][0]['url'], 'screen_name': curr['user']['screen_name'], 'id': curr['id'], 'retweets': curr['retweet_count'], 'created_at': curr['created_at'], 'text': curr['text'], 'videoURL': url}
-		    arrCount += 1
-		    #print(currVine)
-		    vinoArray['count'] = arrCount
-		    vinoArray['vines'].append(currVine)
-		
-		
-	    return JSONEncoder().encode(vinoArray)
-	    
-	except:
-	    print('Error trying to build Vino array')
-	    return JSONEncoder().encode(vinoArray)
-        
-    def getFromTwitter(self, tag=None, lastID=0, size=100):
-	try:
-	    q = 'vine.co/v'
-	    if tag != None:
-			q = q + " " + tag
+    def buildVinoArrayFromJson(JSONArray):
+	arrCount = 0 
+	vinoArray = {'count': arrCount, 'vines': []}
 	
-	    #if lastID != 0:
-		#JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1, since_id=lastID)
-	    #else:
-	    JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", include_entities=1)
-	    VinoArray = self.buildVinoArrayFromJson(JSONArray)
-	    return VinoArray
-	except:
-	    return self.getFromTwitter(tag, 0, 	size/2 + 1)
+	statuses = JSONArray['statuses']
+	for i in range(0, JSONArray['search_metadata']['count']):
+	    currTweet = statuses[i]
+	    url = extractVideoURLFromStatusJSON(currTweet)
+	    if(url != ""):
+		currVine = {'rowInnerHTML': buildHTMLRow(currTweet)
+			    'videoURL': url, 'id': currTweet['id']}
+		arrCount += 1
+		vinoArray['count'] = arrCount
+		vinoArray['vines'].append(currVine)
+	    
+	    
+	return JSONEncoder().encode(vinoArray)
+    '''
+	
+    def getFromTwitter(self, tag, lastID, size):
+	q = 'vine.co/v'
+	if tag != None:
+	    q = q + " " + tag
     
-    
-    def _call(self, call, params=None, data=None):
-        """Make an API call. Return the parsed response. If login has
-        been called, make an authenticated call. If data is not None,
-        it's a post request.
-        """
-        url = BASE_URL + call
-        headers = {"User-Agent": "com.vine.iphone/1.0.3 (unknown, iPhone OS 6.0.1, iPhone, Scale/2.000000)",
-                   "Accept-Language": "en, sv, fr, de, ja, nl, it, es, pt, pt-PT, da, fi, nb, ko, zh-Hans, zh-Hant, ru, pl, tr, uk, ar, hr, cs, el, he, ro, sk, th, id, ms, en-GB, ca, hu, vi, en-us;q=0.8"}
-        if self._key:
-            headers["vine-session-id"] = self._key
-
-        if data:
-            r = requests.post(url, params=params, data=data, headers=headers, verify=False)
-        else:
-            r = requests.get(url, params=params, headers=headers, verify=False)
-
-        try:
-            data = r.json()
-            if data.get("success") is not True:
-                raise VineError(data)
-            return data
-        except:
-            logging.error(r.text)
-            raise
+	JSONArray = self.twitter.search.tweets(q=q, count=size, result_type="recent", since_id=lastID, include_entities=1)
+	print(JSONArray)
+	return JSONArray['statuses']

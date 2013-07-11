@@ -22,47 +22,58 @@ var Vino = (function($) {
         this._queue = [];
         this.load(true);
     };
+    
+    var getRowHTML = function(record) {
+			var innerHTML = '<td>' + record['text'] + '</td>';
+			innerHTML += '<td>' + record['user']['screen_name'] + '</td>';
+			innerHTML += '<td><a href="' + record['entities']['urls'][0]['url'] + '">' + record['entities']['urls'][0]['url'] +'</a></td>';
+			innerHTML += '<td>' + record['retweet_count'] + '</td>';
+			return innerHTML;
+	};
 
     cls.prototype = {
 		 queue: function(data) {
-            var vines = data.vines;
-            if (vines == null) {
+            if (data == null) {
 				console.log("Null parameter passed as data to queue");
                 return false;
             }
 			
             var q = this._queue;
-            var count = data.count;
-			this.lastID = vines[count-1].id;
+            this._queue = this._queue.concat(data);
+            
+            this.lastID = data[data.length-1].id;
+            
+            //var count = data.count;
 			
-            for (var i = 0; i < count; i++) {
+			//#q += vines;
+			
+            /*for (var i = 0; i < count; i++) {
                 current = vines[i];
 				if(current != null && current.videoURL != '') {
 	                q.push({
-						vineURL: current.VineURL,
+						vineURL: current.tweetedURL,
 	                    id: current.id,
-	                    video: current.videoURL,
-	                    description: current.text,
+	                    videoURL: current.videoURL,
+	                    tweetText: current.text,
 	                    username: current.screen_name,
 	                    created_at: current.created_at,
-	                    likes: current.retweets
+	                    retweets: current.retweets
 	                });
 				}
-            }
+            }*/
         },
 		
         load: function(drawOnResponse) {
             if (this.options.recent) {
-                endpoint = this.generateEndpointURL('popular', this.lastID, load_size);
+                endpoint = this.generateEndpointURL('recent', this.lastID, load_size);
             } else {
                 endpoint = this.generateTagURL(this.options.tag);
             }
             
             clsObject = this;
-            
+            console.log('making api call');
             $.get(endpoint, function(response, textStatus, jqXHR) {
-				response = JSON.parse(response);
-
+				console.log('api call made');
                 clsObject.queue(response);
 
 				if(drawOnResponse){
@@ -72,9 +83,28 @@ var Vino = (function($) {
             }, 'json');
         },
         
+        getHTMLfromURL: function(url) {
+			httpRequest = new XMLHttpRequest();
+			httpRequest.onreadystatechange=function() {
+		        if (httpRequest.readyState==4 && httpRequest.status==200) {
+		            return httpRequest.responseText;
+		        }
+		    }
+		    httpRequest.open("GET", url, false );
+			httpRequest.send();
+		},
+		    
+        
         displayNextVideo: function(videoRecord) {
+			var url = videoRecord['entities']['urls'][0]['expanded_url'];
+			var response = this.getHTMLfromURL(url);
+			response = response.to_string();
+			var toVideoDivEnd = response.slice(0, response.search('video/mp4'));
+			videoURL = toVideoDivEnd.slice(response.lastIndexOf('https://'), response.lastIndexOf('.mp4') + 4);
+
+			
 			try {
-				video.src(videoRecord.video);
+				video.src(videoURL);
 			}
 			catch(err) {
 				console.log('Error with video.src');
@@ -95,43 +125,27 @@ var Vino = (function($) {
 			
 			return true;
 		},
+		
+		
 
-        generateVideoHtml: function(record) {
-            var vidInfo = '<td>' + record.description + '</td>'
-							+ '<td>' + record.username + '</td>'
-							+ '<td><a href="' + record.vineURL + '">' + record.vineURL +'</a></td>'
-							+ '<td>' + record.likes + '</td>';
-							
+        updateTable: function(record) {
 			var newRow = document.getElementById('vidtable').insertRow(0);
 			this.numTableRows += 1;
 			if(this.numTableRows >= 10) {
 				document.getElementById('vidtable').deleteRow(10);
 				this.numTableRows -= 1;
 			}
-			newRow.innerHTML = vidInfo
+			newRow.innerHTML = getRowHTML(record);
         },
 
         draw: function() {			
             var q = this._queue;
-           
-            /*while(true) {
-				if (q.length == 0) {
-					console.log("q.length == 0, calling load");
-	                this.load(false); // don't want to draw twice
-	                q = this._queue;
-				}
-				while(q.length > 0 && !(q[q.length-1] in window)) {
-					console.log("First video object in queue undefined, removing");
-					q.pop();
-				}
-				if(q.length > 0 && q[q.length-1] in window) break;
-			}*/
 			
 			while(true) {
 				var nextVideo = q[q.length-1];
 				console.log(nextVideo);
 				if(q.length > 0 && this.displayNextVideo(nextVideo)) {
-					this.generateVideoHtml(nextVideo);
+					this.updateTable(nextVideo);
 					q.pop();
 					break;
 				}
@@ -155,10 +169,11 @@ var Vino = (function($) {
 
         generateEndpointURL: function(endpoint, lastID, size) {
             var origin = document.location.origin;
+            console.log(origin + '/api/' + endpoint + '/' + lastID + '/' + size);
             return origin + '/api/' + endpoint + '/' + lastID + '/' + size;
         },
 
-        generateTagURL: function(tag, page) {
+        generateTagURL: function(tag) {
             var endpoint = 'tags/' + encodeURIComponent(tag);
             return this.generateEndpointURL(endpoint, 0, load_size);
         }
